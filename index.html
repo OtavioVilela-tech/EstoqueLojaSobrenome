@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Controle de estoque</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Entrada: criar conta do dono (primeiro acesso) ou fazer login -->
+  <main id="auth" class="auth" hidden>
+    <div class="fita" aria-hidden="true"></div>
+    <form id="form-auth" class="auth-caixa" autocomplete="on">
+      <h1 id="auth-titulo">Entrar</h1>
+      <p id="auth-texto" class="suave"></p>
+      <label>Usuário
+        <input id="auth-usuario" name="usuario" autocomplete="username" required maxlength="40">
+      </label>
+      <label>Senha
+        <input id="auth-senha" name="senha" type="password" autocomplete="current-password" required minlength="6">
+      </label>
+      <p id="auth-erro" class="erro" role="alert" hidden></p>
+      <button class="btn primario" id="auth-enviar" type="submit">Entrar</button>
+    </form>
+  </main>
+
+  <!-- Sistema -->
+  <div id="app" hidden>
+    <header class="topo">
+      <div class="fita" aria-hidden="true"></div>
+      <div class="topo-linha">
+        <h1>Controle de estoque</h1>
+        <nav class="abas" aria-label="Seções">
+          <button class="aba ativa" data-aba="estoque" type="button">Estoque</button>
+          <button class="aba" data-aba="movimentacoes" type="button">Movimentações</button>
+        </nav>
+        <div class="usuario">
+          <span id="nome-usuario"></span>
+          <button class="btn texto" id="btn-sair" type="button">Sair</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="conteudo">
+      <!-- Aba estoque -->
+      <section id="aba-estoque">
+        <dl class="resumo" id="resumo"></dl>
+
+        <div class="barra">
+          <input id="busca" type="search" placeholder="Buscar por nome, cor ou categoria" aria-label="Buscar peça">
+          <select id="filtro-categoria" aria-label="Filtrar por categoria">
+            <option value="">Todas as categorias</option>
+          </select>
+          <select id="filtro-situacao" aria-label="Filtrar por situação">
+            <option value="">Qualquer situação</option>
+            <option value="alerta">Precisam de reposição</option>
+            <option value="baixo">Estoque baixo</option>
+            <option value="zerado">Sem estoque</option>
+          </select>
+          <button class="btn primario" id="btn-nova" type="button">Nova peça</button>
+        </div>
+
+        <div id="lista-wrap">
+          <table class="tabela" id="tabela-estoque">
+            <thead>
+              <tr>
+                <th>Peça</th>
+                <th>Categoria</th>
+                <th>Tam.</th>
+                <th>Estoque</th>
+                <th class="dir">Custo</th>
+                <th class="dir">Venda</th>
+                <th><span class="so-leitor">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody id="corpo-estoque"></tbody>
+          </table>
+          <p id="vazio" class="vazio" hidden></p>
+        </div>
+      </section>
+
+      <!-- Aba movimentações -->
+      <section id="aba-movimentacoes" hidden>
+        <h2 class="subtitulo">Últimas movimentações</h2>
+        <table class="tabela" id="tabela-mov">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Peça</th>
+              <th>Tipo</th>
+              <th class="dir">Quantidade</th>
+              <th class="dir">Saldo</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody id="corpo-mov"></tbody>
+        </table>
+        <p id="vazio-mov" class="vazio" hidden>Nenhuma movimentação ainda. Registre uma entrada ou saída na aba Estoque.</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Cadastro / edição de peça -->
+  <dialog id="dlg-produto">
+    <form id="form-produto" method="dialog">
+      <h2 id="dlg-produto-titulo">Nova peça</h2>
+      <div class="grade">
+        <label class="largo">Nome da peça
+          <input name="nome" required maxlength="120" placeholder="Ex.: Camiseta básica">
+        </label>
+        <label>Categoria
+          <input name="categoria" list="lista-categorias" maxlength="60" placeholder="Ex.: Camisetas">
+          <datalist id="lista-categorias"></datalist>
+        </label>
+        <label>Cor
+          <input name="cor" maxlength="40" placeholder="Ex.: Preta">
+        </label>
+        <label>Tamanho
+          <input name="tamanho" list="lista-tamanhos" maxlength="20" placeholder="Ex.: M">
+          <datalist id="lista-tamanhos">
+            <option value="PP"><option value="P"><option value="M"><option value="G"><option value="GG"><option value="XG">
+            <option value="36"><option value="38"><option value="40"><option value="42"><option value="44"><option value="Único">
+          </datalist>
+        </label>
+        <label id="campo-qtd-inicial">Quantidade inicial
+          <input name="quantidade" type="number" min="0" step="1" value="0" inputmode="numeric">
+        </label>
+        <label>Avisar quando restar até
+          <input name="estoque_minimo" type="number" min="0" step="1" value="3" inputmode="numeric">
+        </label>
+        <label>Preço de custo (R$)
+          <input name="preco_custo" type="number" min="0" step="0.01" value="0" inputmode="decimal">
+        </label>
+        <label>Preço de venda (R$)
+          <input name="preco_venda" type="number" min="0" step="0.01" value="0" inputmode="decimal">
+        </label>
+      </div>
+      <p id="margem" class="suave"></p>
+      <p id="erro-produto" class="erro" role="alert" hidden></p>
+      <div class="acoes-dlg">
+        <button class="btn" type="button" data-fechar>Cancelar</button>
+        <button class="btn primario" type="submit">Salvar peça</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Entrada / saída / ajuste -->
+  <dialog id="dlg-mov">
+    <form id="form-mov" method="dialog">
+      <h2>Movimentar estoque</h2>
+      <p id="mov-peca" class="suave"></p>
+      <fieldset class="tipos">
+        <legend class="so-leitor">Tipo de movimentação</legend>
+        <label><input type="radio" name="tipo" value="entrada" checked> Entrada</label>
+        <label><input type="radio" name="tipo" value="saida"> Saída</label>
+        <label><input type="radio" name="tipo" value="ajuste"> Contagem</label>
+      </fieldset>
+      <label id="mov-rotulo-qtd">Quantidade que chegou
+        <input name="quantidade" type="number" min="1" step="1" value="1" required inputmode="numeric">
+      </label>
+      <label>Observação (opcional)
+        <input name="observacao" maxlength="200" placeholder="Ex.: venda no balcão, compra do fornecedor">
+      </label>
+      <p id="erro-mov" class="erro" role="alert" hidden></p>
+      <div class="acoes-dlg">
+        <button class="btn" type="button" data-fechar>Cancelar</button>
+        <button class="btn primario" type="submit">Registrar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Confirmação de exclusão -->
+  <dialog id="dlg-excluir">
+    <form method="dialog">
+      <h2>Excluir peça?</h2>
+      <p id="excluir-texto"></p>
+      <div class="acoes-dlg">
+        <button class="btn" value="cancelar">Cancelar</button>
+        <button class="btn perigo" value="excluir">Excluir peça</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="aviso" class="aviso" role="status" aria-live="polite" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>

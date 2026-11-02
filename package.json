@@ -1,0 +1,13 @@
+{
+  "name": "estoque-loja",
+  "version": "1.0.0",
+  "description": "Sistema web de controle de estoque para loja de roupas",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "license": "ISC"
+}
